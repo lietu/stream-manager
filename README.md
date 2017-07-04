@@ -4,6 +4,9 @@ An utility for managing various things around live streams.
 
 Primarily built for use on Twitch, for my personal use, but can probably with little effort be extended to other uses.
 
+If you're afraid of code, don't want to get your hands dirty, and just want a simple web based service for your
+notifications this is not for you.
+
 
 ## Requirements
 
