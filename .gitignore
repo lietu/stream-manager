@@ -1,0 +1,6 @@
+.idea
+node_modules
+*.exe
+settings.yaml
+*~
+html-overlay/www-dist

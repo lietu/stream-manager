@@ -1,0 +1,10 @@
+{
+  "files": [
+    "src/core.ts"
+  ],
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "target": "es5"
+  }
+}

@@ -1,0 +1,35 @@
+streams:
+  - twitch
+
+webui:
+  host:
+  port: 60006
+
+overlay:
+  host:
+  port: 60606
+
+mongo_hosts: localhost
+
+twitch:
+  username: lietu
+  oauth_token: your_token_here
+  client_id: your_client_id_here
+
+lametric:
+#  follower:
+#    url: "https://developer.lametric.com/api/V1/dev/widget/update/..."
+#    access_token: "your access token"
+#    icon: i5337
+#  subscriber:
+#    url: "https://developer.lametric.com/api/V1/dev/widget/update/..."
+#    access_token: "your access token"
+#    icon: i10824
+#  host:
+#    url: "https://developer.lametric.com/api/V1/dev/widget/update/..."
+#    access_token: "your access token"
+#    icon: a4741
+#  bits:
+#    url: "https://developer.lametric.com/api/V1/dev/widget/update/..."
+#    access_token: "your access token"
+#    icon: a10393

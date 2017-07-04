@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    Put this .html file in:
+
+     - Windows: %APPDATA%/stream-manager/files/example.html
+     - Others: Check config/config_<platform>.go for the storage base path, add /files/example.html
+
+    Open it up at http://stream-manager-host:60606/example.html, so e.g. http://localhost:60606/example.html locally.
+
+    Core.js connects to /events on the same source address as this file is loaded from.
+
+    So if you connect to http://localhost:60606/example.html it subscribes for events at http://localhost:60606/events
+    -->
+    <script src="/core/core.js"></script>
+    <style>
+        #status {
+            border: 1px solid black;
+            border-radius: 3px;
+            padding: 8px;
+            margin: 16px;
+        }
+    </style>
+</head>
+<body>
+<div id="status"></div>
+<script>
+    function setStatus(txt) {
+        var status = document.getElementById("status");
+        status.textContent = txt;
+        console.log("[STATUS] " + txt);
+    }
+
+    // The core provides a common way to throttle notifications for when they are arriving in rapid succession
+    var showMessage = core.throttled(function(done, msg) {
+        // Promises are available as well from core.js
+        var p = new Promise(function (resolve, reject) {
+            setStatus("Got message " + JSON.stringify(msg));
+
+            setTimeout(resolve, 2500);
+        });
+
+        // Call done() once you've done showing all the animations and things
+        p.then(function() {
+            setStatus("Done showing message.");
+
+            // If you want a delay between notifications, use a timeout here
+            done();
+        });
+    });
+
+    /*
+     * Most interaction with the stream manager should be done via core.on(type, function(msg) {...});
+     *
+     * Main types are: hello, bits, host, subscriber, and follower
+     *
+     * Additionally "bits_actions" sends the configuration for cheers from Twitch
+     */
+    core.on("hello", function(msg) {
+        setStatus("Connected to server");
+        showMessage(msg).then(function(done) {
+            setStatus("Started showing message, how is a good time to play sounds and such.");
+
+            // Don't forget to notify throttler that we're done too
+            // core.throttled continues only after both done callbacks have been called
+            done();
+        });
+    });
+
+    function test() {
+        showMessage({"oh": "my"}).then(function(done) { setStatus("First showing"); done(); });
+        showMessage({"so": "many"}).then(function(done) { setStatus("Second showing"); done(); });
+        showMessage({"notifications": "coming"}).then(function(done) { setStatus("Last showing"); done(); });
+    }
+
+    setStatus("Connecting...");
+</script>
+</body>
+</html>
