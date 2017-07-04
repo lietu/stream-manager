@@ -69,3 +69,15 @@ go build stream-manager.go
 You'll likely want to allow traffic at least from localhost to your port 60606 (or whatever you changed that).
 
 Create your notification frontend (e.g. using `html-overlay/example.html` as a base) and set it up for OBS/Xsplit.
+
+
+## Related
+
+https://github.com/lietu/stream-manager-unity-frontend
+
+
+## License
+
+MIT and/or new BSD
+
+Pick which one works better for you.
