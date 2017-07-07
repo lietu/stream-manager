@@ -23,6 +23,8 @@ type Manager struct {
 	Inventory      *inventory.Inventory
 	streamServices []StreamService
 	lametric       *lametric.LaMetric
+	WebUIAddress   string
+	WebUI		   *http.ServeMux
 }
 
 const testOverlays = false
@@ -54,17 +56,27 @@ func (m *Manager) Start() {
 	// Initialize LaMetric usage
 	m.lametric = lametric.New(m.Config.LaMetric)
 
+	// And the WebUI mux so stream services can register their handlers
+	m.WebUIAddress = fmt.Sprintf("%s:%d", m.Config.WebUI.Host, m.Config.WebUI.Port)
+	m.WebUI = http.NewServeMux()
+
 	// Start all the stream subsystems
 	log.Print("Starting stream services")
 	for _, ss := range m.streamServices {
 		ss.Start()
 	}
 
+	// Set up WebUI HTTP server
+	webUIServer := manners.NewWithServer(&http.Server{
+		Addr: m.WebUIAddress,
+		Handler: m.WebUI,
+	})
+
 	// Set up the overlay HTTP handlers
 	overlayAddress := fmt.Sprintf("%s:%d", m.Config.Overlay.Host, m.Config.Overlay.Port)
 	overlayServeMux := storage.ConfigureOverlayHTTP(m.Config)
 	overlayServeMux.HandleFunc("/events", m.overlayEventHandler)
-	gs := manners.NewWithServer(&http.Server{
+	overlayServer := manners.NewWithServer(&http.Server{
 		Addr:    overlayAddress,
 		Handler: overlayServeMux,
 	})
@@ -72,10 +84,21 @@ func (m *Manager) Start() {
 	// Make sure we have something to manage the overlay client connections
 	go manageOverlayClientChannels()
 
-	// Run the HTTP server for overlay clients
+	// Run the HTTP servers
+	go func() {
+		log.Printf("Starting WebUI server at %s", m.WebUIAddress)
+		err := webUIServer.ListenAndServe()
+
+		if err != nil {
+			log.Printf("WebUI server exited with an error: %s", err)
+		} else {
+			log.Print("WebUI server exited cleanly")
+		}
+	}()
+
 	go func() {
 		log.Printf("Starting overlay server at %s", overlayAddress)
-		err := gs.ListenAndServe()
+		err := overlayServer.ListenAndServe()
 
 		if err != nil {
 			log.Printf("Overlay server exited with an error: %s", err)
@@ -134,13 +157,13 @@ func (m *Manager) Start() {
 
 	// TODO: Blocking close maybe?
 	log.Println("Closing overlay server")
-	gs.Close()
+	overlayServer.Close()
+	webUIServer.Close()
 
 	log.Printf("Closing %d stream services", len(m.streamServices))
 	for _, ss := range m.streamServices {
 		ss.Stop()
 	}
-
 }
 
 func (m *Manager) SendToFrontend(msgType string, data []byte) {

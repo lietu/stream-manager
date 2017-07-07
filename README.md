@@ -36,7 +36,8 @@ notifications this is not for you.
 You'll need an OAuth token, and a Twitch app registered.
 
 The OAuth token should have the `chat_login` -scope. Probably will use the `channel_subscriptions` -scope in the future
-too. You can probably use the one https://twitchapps.com/tmi/ generates, just remove the `oauth:` -prefix.
+too. You can get an OAuth token by opening the page http://localhost:60006 and following the instructions after starting
+the stream manager.
 
 Create your Developer Application at https://www.twitch.tv/settings/connections and get it's Client ID.
 

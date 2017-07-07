@@ -41,8 +41,11 @@ func (tss *TwitchStreamService) Start() {
 	log.Print("Starting TwitchStreamService")
 	tss.running = true
 
+	tss.registerWebUI()
 	tss.fetchChannelId()
 	tss.fetchBitsActions()
+
+	tss.getSubscribers()
 
 	go func() {
 		log.Print("Running Twitch stream service.")
@@ -84,6 +87,39 @@ func (tss *TwitchStreamService) WelcomeOverlayClient(c *manager.OverlayClient) {
 		panic(err)
 	}
 	c.Send(data)
+}
+
+func (tss *TwitchStreamService) registerWebUI() {
+	tss.manager.WebUI.HandleFunc("/twitch", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "twitch/oauth.html")
+	})
+
+	log.Printf("To get your Twitch OAuth token open up http://%s/twitch", tss.manager.WebUIAddress)
+}
+
+func (tss *TwitchStreamService) getSubscribers() {
+	path := fmt.Sprintf("channels/%s/subscriptions?limit=100", tss.channelId)
+
+	res, err := tss.kraken(path)
+	if err != nil {
+		// TODO: Better handling plz
+		panic(err)
+	}
+	defer res.Body.Close()
+
+	sr := SubscriptionsResponse{}
+	err = json.NewDecoder(res.Body).Decode(&sr)
+	if err != nil {
+		fmt.Printf("Error decoding subscription list: %s", err)
+		return
+	}
+
+	log.Printf("")
+	log.Printf("Your channel subscribers (%d):", sr.Total)
+	for _, s := range sr.Subscriptions {
+		log.Printf(" - %s (%s)", s.User.Name, s.SubPlanName)
+	}
+	log.Printf("")
 }
 
 func (tss *TwitchStreamService) fetchChannelId() {
@@ -141,7 +177,7 @@ func (tss *TwitchStreamService) kraken(path string) (*http.Response, error) {
 
 	req.Header.Set("Accept", "application/vnd.twitchtv.v5+json")
 	req.Header.Set("Client-ID", tss.manager.Config.Twitch.ClientId)
-	// TODO: Consider sending 'Authorization: OAuth ...'
+	req.Header.Set("Authorization", fmt.Sprintf("OAuth %s", tss.manager.Config.Twitch.OAuthToken))
 
 	return c.Do(req)
 }

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        em {
+            font-weight: bold;
+        }
+
+        #oauth-area {
+            margin: 64px 0;
+        }
+
+        .oauth-token-container {
+            font-size: 2rem;
+            font-weight: bold;
+            font-family: 'Droid Sans Mono', 'Courier New', monospace;
+        }
+
+        footer {
+            border-top: 1px solid #777;
+            margin: 64px 0;
+            padding-top: 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="jumbotron">
+    <div class="container">
+        <h1>Twitch OAuth login</h1>
+    </div>
+</div>
+<div class="container">
+    <div class="col-md-12">
+        <h2>What is this?</h2>
+        <p>
+            To use stream manager with Twitch, you will need to have a Developer Application registered, and you need
+            an OAuth token for your user account that allows stream manager access to all the relevant information.
+        </p>
+        <p>
+            First, make sure you've set up your Developer Application at
+            <a href="https://www.twitch.tv/settings/connections">https://www.twitch.tv/settings/connections</a> and make
+            sure you've configured the Client ID correctly in <em>settings.yaml</em>.
+        </p>
+        <p>
+            Make sure your Developer Application redirect URI is set to http://localhost:60006/twitch
+        </p>
+    </div>
+    <div id="oauth-area" class="hidden well col-md-12">
+        <h2>Your OAuth Token</h2>
+        <div class="oauth-token-container"></div>
+    </div>
+    <div class="col-md-12 well">
+        <h2>Get your OAuth token</h2>
+        <form method="GET" action="https://api.twitch.tv/kraken/oauth2/authorize">
+            <h3>Basic details</h3>
+            <div class="form-group">
+                <label for="client_id">Client ID</label>
+                <input class="form-control" name="client_id" id="client_id"
+                       placeholder="Your App's Client ID">
+            </div>
+            <div class="form-group">
+                <label for="redirect_uri">Redirect URI</label>
+                <input class="form-control" name="redirect_uri" id="redirect_uri"
+                       placeholder="The URI to redirect to after login"
+                       value="http://localhost:60006/twitch">
+            </div>
+            <div class="form-group">
+                <label for="response_type">Response type</label>
+                <input class="form-control" name="response_type" id="response_type"
+                       placeholder="The OAuth response type"
+                       value="token">
+            </div>
+            <h3>Scopes</h3>
+            <input type="hidden" name="scope">
+            <div class="scopes">
+                <div class="checkbox">
+                    <label>
+                        <input id="chat_login"
+                               type="checkbox" checked> Chat login
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input id="channel_subscriptions"
+                               type="checkbox" checked> Channel subscriptions
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    var form = document.querySelector("form");
+
+    function parse_args() {
+        var result = {};
+        var paramString = window.location.hash.substr(1);
+
+        if (paramString) {
+            var params = paramString.split("&");
+            for (var i = 0; i < params.length; i += 1) {
+                var kv = params[i].split("=");
+                result[kv[0]] = kv[1];
+            }
+        }
+
+        return result;
+    }
+
+    function check_token() {
+        var args = parse_args();
+        if (args.access_token) {
+            document.querySelector(".oauth-token-container").textContent = args.access_token;
+            document.getElementById("oauth-area").classList.remove("hidden");
+        }
+    }
+
+    form.addEventListener("submit", function() {
+        var scopes = [];
+        var checkboxes = Array.prototype.slice.apply(form.querySelectorAll("input[type=checkbox]"));
+        checkboxes.forEach(function(checkbox) {
+            scopes.push(checkbox.getAttribute("id"));
+        });
+
+        form.querySelector("input[name=scope]").value = scopes.join(" ");
+    });
+
+    check_token()
+</script>
+</body>
+</html>

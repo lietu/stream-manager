@@ -17,6 +17,13 @@ type Follow struct {
 	User          *User  `json:"user"`
 }
 
+type Subscription struct {
+	CreatedAt     string `json:"created_at"`
+	SubPlan		  string `json:"sub_plan"`
+	SubPlanName   string `json:"sub_plan_name"`
+	User          *User  `json:"user"`
+}
+
 type Preview struct {
 	Small    string `json:"small"`
 	Medium   string `json:"medium"`
@@ -67,6 +74,12 @@ type FollowsResponse struct {
 	Cursor  string    `json:"_cursor"`
 	Total   int       `json:"_total"`
 	Follows []*Follow `json:"follows"`
+}
+
+type SubscriptionsResponse struct {
+	Cursor  string    `json:"_cursor"`
+	Total   int       `json:"_total"`
+	Subscriptions []*Subscription `json:"subscriptions"`
 }
 
 type StreamResponse struct {
