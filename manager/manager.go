@@ -15,7 +15,6 @@ import (
 	"github.com/lietu/stream-manager/lametric"
 	"sync"
 	"time"
-	"strconv"
 )
 
 type Manager struct {
@@ -109,7 +108,7 @@ func (m *Manager) Start() {
 
 	// Generate bunch of notifications if we want to test the overlays
 	if testOverlays {
-		wait := time.Millisecond * 2500
+		wait := time.Millisecond * 500
 		rand.Seed(time.Now().Unix())
 		go func() {
 			for {
@@ -129,21 +128,18 @@ func (m *Manager) Start() {
 
 				<-time.After(wait)
 				r := random(1, 100)
-				if r < 10 {
-					SendMessageToAllOverlays(NewBits("liepoop", 666, "Kappa666"))
+				if r < 3 {
+					SendMessageToAllOverlays(NewSubscriber("twitch", "lietu", "$4.99", "1"))
+					continue
+				} else if r < 30 {
+					SendMessageToAllOverlays(NewHost("twitch", "lietu"))
+					continue
+				} else if r < 60 {
+					SendMessageToAllOverlays(NewFollower("twitch", "lietu"))
 					continue
 				}
 
-				if r > 98 {
-					r *= 100
-				} else if r > 93 {
-					r *= 10
-				} else if r > 85 {
-					r+= 150
-				}
-
-				cheer := "cheer" + strconv.Itoa(r)
-				SendMessageToAllOverlays(NewBits("liepoop", r * 5, cheer + " " + cheer + " " + cheer + " " + cheer + " " + cheer))
+				SendMessageToAllOverlays(NewBits("liepoop", 110, "cheer10 cheer100"))
 			}
 		}()
 	}

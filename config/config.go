@@ -80,14 +80,6 @@ func LoadConfig() (c *Config) {
 		panic(err)
 	}
 
-	if c.WebUI.Host == "" {
-		c.WebUI.Host = "localhost"
-	}
-
-	if c.Overlay.Host == "" {
-		c.Overlay.Host = "localhost"
-	}
-
 	c.OverlayCorePath = filepath.Join(wd, filepath.Join("html-overlay", "www-dist"))
 	c.StoragePath = GetLocalStoragePath()
 	c.CustomFilesPath = filepath.Join(c.StoragePath, "files")
